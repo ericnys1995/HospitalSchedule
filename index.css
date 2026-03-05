@@ -33,7 +33,7 @@ border:2px solid #ffd84d;
 
 .day-title{
 font-weight:700;
-font-size:17px;
+font-size:18px;
 margin-bottom:10px;
 }
 
@@ -44,8 +44,10 @@ margin-top:10px;
 }
 
 .slot-title{
-font-weight:600;
-margin-bottom:6px;
+  font-weight:600;
+  margin-bottom:6px;
+  text-align:center;
+  font-size:18px;
 }
 
 .member-list{

@@ -203,8 +203,8 @@ ${label(d)} ${star} (${date})
 </div>
 `;
 
-      dayDiv.appendChild(createSlot(date, "noon", "下午", data.noon));
-      dayDiv.appendChild(createSlot(date, "night", "晚上", data.night));
+      dayDiv.appendChild(createSlot(date, "noon", "中午☀️", data.noon));
+      dayDiv.appendChild(createSlot(date, "night", "晚上🌙", data.night));
 
     }
   );
