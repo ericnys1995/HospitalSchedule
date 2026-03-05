@@ -108,32 +108,30 @@ ${checkboxList("food", data?.food || [])}
   }
 
   // food → visit 自動勾
-  foodBoxes.forEach(foodBox => {
+foodBoxes.forEach(foodBox => {
 
-    foodBox.addEventListener("change", () => {
+  foodBox.addEventListener("change", () => {
 
-      if (foodBox.checked) {
+    const name = foodBox.value;
 
-        const name = foodBox.value;
+    const visitBox = slot.querySelector(
+      `input[data-group="visit"][value="${name}"]`
+    );
 
-        const visitBox = slot.querySelector(
-          `input[data-group="visit"][value="${name}"]`
-        );
+    if (visitBox) {
+      visitBox.checked = foodBox.checked;
+    }
 
-        if (visitBox) {
-          visitBox.checked = true;
-        }
-
-      }
-
-      save();
-
-    });
+    save();
 
   });
 
-  visitBoxes.forEach(v => v.onchange = save);
-  remark.oninput = save;
+});
+
+  visitBoxes.forEach(v => v.onchange = save)
+  foodBoxes.forEach(f => f.onchange = save)
+
+  remark.onblur = save
 
   let timer;
 
