@@ -1,70 +1,66 @@
 body{
-  font-family:-apple-system,BlinkMacSystemFont;
-  margin:16px;
-  background:#f4f4f4;
+font-family:-apple-system,BlinkMacSystemFont;
+margin:16px;
+background:#f4f4f4;
 }
 
 h1{
-  font-size:28px;
+font-size:28px;
 }
 
 button{
-  padding:10px 14px;
-  border:none;
-  border-radius:10px;
-  background:#4CAF50;
-  color:white;
-  font-size:15px;
-  margin-bottom:14px;
+padding:10px 14px;
+border:none;
+border-radius:10px;
+background:#4CAF50;
+color:white;
+font-size:15px;
+margin-bottom:14px;
 }
 
 .day{
-  background:white;
-  border-radius:16px;
-  padding:14px;
-  margin-bottom:14px;
-  box-shadow:0 3px 10px rgba(0,0,0,0.05);
+background:white;
+border-radius:16px;
+padding:14px;
+margin-bottom:14px;
+box-shadow:0 3px 10px rgba(0,0,0,0.05);
 }
 
 .today{
-  background:#fff7cc;
-  border:2px solid #ffd84d;
+background:#fff7cc;
+border:2px solid #ffd84d;
 }
 
 .day-title{
-  font-weight:700;
-  font-size:17px;
-  margin-bottom:10px;
+font-weight:700;
+font-size:17px;
+margin-bottom:10px;
 }
 
 .slot{
-  border-top:1px solid #eee;
-  padding-top:10px;
-  margin-top:10px;
+border-top:1px solid #eee;
+padding-top:10px;
+margin-top:10px;
 }
 
 .slot-title{
-  font-weight:600;
-  margin-bottom:6px;
+font-weight:600;
+margin-bottom:6px;
 }
 
 .member-list{
-  display:grid;
-  grid-template-columns:repeat(3,1fr);
-  gap:6px;
-  margin-bottom:10px;
-}
-
-.member-list label{
-  font-size:14px;
+display:grid;
+grid-template-columns:repeat(2,1fr);
+gap:6px;
+margin-bottom:10px;
 }
 
 textarea{
-  width:100%;
-  min-height:60px;
-  padding:10px;
-  border-radius:10px;
-  border:1px solid #ddd;
-  resize:vertical;
-  box-sizing:border-box;
+width:100%;
+min-height:60px;
+padding:10px;
+border-radius:10px;
+border:1px solid #ddd;
+resize:vertical;
+box-sizing:border-box;
 }

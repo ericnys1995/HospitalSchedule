@@ -19,61 +19,81 @@ const firebaseConfig = {
   measurementId: "G-BB1JCMYJJ3"
 };
 
-const app=initializeApp(firebaseConfig);
-const db=getFirestore(app);
+const app=initializeApp(firebaseConfig)
+const db=getFirestore(app)
 
-const members=["媽咪","阿哥","細路","姑姐","舅父"];
+
+const members=[
+"媽咪",
+"阿哥",
+"細路",
+"姑姐",
+"舅父"
+]
 
 function getFamily(){
-const m=location.hash.match(/family=([^&]+)/);
-return m?m[1]:"default";
+const m=location.hash.match(/family=([^&]+)/)
+return m?m[1]:"default"
 }
 
-const family=getFamily();
+const family=getFamily()
+
 
 function formatDate(d){
-return d.toISOString().split("T")[0];
+const y=d.getFullYear()
+const m=String(d.getMonth()+1).padStart(2,"0")
+const day=String(d.getDate()).padStart(2,"0")
+return `${y}-${m}-${day}`
 }
+
 
 function label(d){
 
-const today=new Date();
-today.setHours(0,0,0,0);
+const today=new Date()
+today.setHours(0,0,0,0)
 
-const x=new Date(d);
-x.setHours(0,0,0,0);
+const x=new Date(d)
+x.setHours(0,0,0,0)
 
-const diff=(x-today)/86400000;
+const diff=(x-today)/86400000
 
-if(diff===0)return"今日";
-if(diff===1)return"聽日";
+if(diff===0)return"今日"
+if(diff===1)return"聽日"
 
-return d.toLocaleDateString("zh-HK",{weekday:"short",month:"numeric",day:"numeric"});
+return d.toLocaleDateString("zh-HK",{weekday:"short",month:"numeric",day:"numeric"})
 }
 
-const container=document.getElementById("schedule");
+
+const container=document.getElementById("schedule")
 
 
 function checkboxList(name,selected=[]){
 
 return `
 <div class="member-list">
+
 ${members.map(m=>`
 <label>
-<input type="checkbox" value="${m}" ${selected.includes(m)?"checked":""} data-group="${name}">
+<input type="checkbox" value="${m}" data-group="${name}" ${selected.includes(m)?"checked":""}>
 ${m}
 </label>
 `).join("")}
+
+<label>
+<input type="checkbox" value="其他" data-group="${name}" ${selected.includes("其他")?"checked":""}>
+其他（填備注）
+</label>
+
 </div>
-`;
+`
 
 }
 
 
 function createSlot(date,key,title,data){
 
-const slot=document.createElement("div");
-slot.className="slot";
+const slot=document.createElement("div")
+slot.className="slot"
 
 slot.innerHTML=`
 
@@ -88,22 +108,48 @@ ${checkboxList("food",data?.food||[])}
 <label>備注</label>
 <textarea placeholder="例如：粥、水果">${data?.remark||""}</textarea>
 
-`;
+`
 
-const visitChecks=[...slot.querySelectorAll('input[data-group="visit"]')];
-const foodChecks=[...slot.querySelectorAll('input[data-group="food"]')];
-const remark=slot.querySelector("textarea");
+const visit=[...slot.querySelectorAll('input[data-group="visit"]')]
+const food=[...slot.querySelectorAll('input[data-group="food"]')]
+
+const remark=slot.querySelector("textarea")
 
 
-function getChecked(list){
-return list.filter(i=>i.checked).map(i=>i.value);
+function checked(list){
+return list.filter(i=>i.checked).map(i=>i.value)
 }
 
-let timer;
+
+food.forEach(foodBox=>{
+foodBox.onchange=()=>{
+
+if(foodBox.checked){
+
+visit.forEach(v=>{
+if(v.value===foodBox.value){
+v.checked=true
+}
+})
+
+}
+
+save()
+
+}
+})
+
+
+visit.forEach(v=>v.onchange=save)
+food.forEach(f=>f.onchange=save)
+remark.oninput=save
+
+
+let timer
 
 function save(){
 
-clearTimeout(timer);
+clearTimeout(timer)
 
 timer=setTimeout(async()=>{
 
@@ -111,73 +157,69 @@ await setDoc(
 doc(db,"families",family,"days",date),
 {
 [key]:{
-visitor:getChecked(visitChecks),
-food:getChecked(foodChecks),
+visitor:checked(visit),
+food:checked(food),
 remark:remark.value
 },
 updatedAt:serverTimestamp()
 },
 {merge:true}
-);
+)
 
-},400);
+},300)
 
 }
 
-visitChecks.forEach(i=>i.onchange=save);
-foodChecks.forEach(i=>i.onchange=save);
-remark.oninput=save;
-
-return slot;
+return slot
 }
 
 
 
 for(let i=0;i<7;i++){
 
-const d=new Date();
-d.setDate(d.getDate()+i);
+const d=new Date()
+d.setDate(d.getDate()+i)
 
-const date=formatDate(d);
+const date=formatDate(d)
 
-const dayDiv=document.createElement("div");
-dayDiv.className="day";
+const dayDiv=document.createElement("div")
+dayDiv.className="day"
 
-const today=new Date();
-today.setHours(0,0,0,0);
+const today=new Date()
+today.setHours(0,0,0,0)
 
-const check=new Date(d);
-check.setHours(0,0,0,0);
+const check=new Date(d)
+check.setHours(0,0,0,0)
 
 if(check.getTime()===today.getTime()){
-dayDiv.classList.add("today");
+dayDiv.classList.add("today")
 }
 
 dayDiv.innerHTML=`
 <div class="day-title">
-${label(d)} ${check.getTime()===today.getTime()?"⭐":""} (${date})
+${label(d)} ⭐ (${date})
 </div>
-`;
+`
 
-container.appendChild(dayDiv);
+container.appendChild(dayDiv)
 
 
 onSnapshot(
 doc(db,"families",family,"days",date),
 snap=>{
 
-const data=snap.exists()?snap.data():{};
+const data=snap.exists()?snap.data():{}
 
 dayDiv.innerHTML=`
 <div class="day-title">
-${label(d)} ${check.getTime()===today.getTime()?"⭐":""} (${date})
+${label(d)} ⭐ (${date})
 </div>
-`;
+`
 
-dayDiv.appendChild(createSlot(date,"noon","午",data.noon));
-dayDiv.appendChild(createSlot(date,"night","晚",data.night));
+dayDiv.appendChild(createSlot(date,"noon","下午",data.noon))
+dayDiv.appendChild(createSlot(date,"night","晚上",data.night))
 
-});
+})
 
 }
 
@@ -185,26 +227,26 @@ dayDiv.appendChild(createSlot(date,"night","晚",data.night));
 
 document.getElementById("copyYesterday").onclick=async()=>{
 
-const today=new Date();
-const yesterday=new Date();
-yesterday.setDate(today.getDate()-1);
+const today=new Date()
+const yesterday=new Date()
+yesterday.setDate(today.getDate()-1)
 
-const t=formatDate(today);
-const y=formatDate(yesterday);
+const t=formatDate(today)
+const y=formatDate(yesterday)
 
-const snap=await getDoc(doc(db,"families",family,"days",y));
+const snap=await getDoc(doc(db,"families",family,"days",y))
 
 if(!snap.exists()){
-alert("昨日沒有資料");
-return;
+alert("昨日沒有資料")
+return
 }
 
 await setDoc(
 doc(db,"families",family,"days",t),
 snap.data(),
 {merge:true}
-);
+)
 
-alert("已複製昨日安排");
+alert("已複製昨日安排")
 
-};
+}
