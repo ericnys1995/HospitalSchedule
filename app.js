@@ -8,7 +8,6 @@ import {
   serverTimestamp
 } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
 
-
 const firebaseConfig = {
   apiKey: "AIzaSyD6SpjIWYZcGm0M-nt2oG5vdklAdGyTvCA",
   authDomain: "hospitalschedule-d9267.firebaseapp.com",
@@ -19,9 +18,8 @@ const firebaseConfig = {
   measurementId: "G-BB1JCMYJJ3"
 };
 
-const app = initializeApp(firebaseConfig)
-const db = getFirestore(app)
-
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
 
 const members = [
   "媽咪",
@@ -29,74 +27,66 @@ const members = [
   "細路",
   "姑姐",
   "舅父"
-]
+];
 
 function getFamily() {
-  const m = location.hash.match(/family=([^&]+)/)
-  return m ? m[1] : "default"
+  const m = location.hash.match(/family=([^&]+)/);
+  return m ? m[1] : "default";
 }
 
-const family = getFamily()
-
+const family = getFamily();
 
 function formatDate(d) {
-  const y = d.getFullYear()
-  const m = String(d.getMonth() + 1).padStart(2, "0")
-  const day = String(d.getDate()).padStart(2, "0")
-  return `${y}-${m}-${day}`
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  return `${y}-${m}-${day}`;
 }
-
 
 function label(d) {
 
-  const today = new Date()
-  today.setHours(0, 0, 0, 0)
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
 
-  const x = new Date(d)
-  x.setHours(0, 0, 0, 0)
+  const x = new Date(d);
+  x.setHours(0, 0, 0, 0);
 
-  const diff = (x - today) / 86400000
+  const diff = (x - today) / 86400000;
 
-  if (diff === 0) return "今日"
-  if (diff === 1) return "聽日"
+  if (diff === 0) return "今日";
+  if (diff === 1) return "聽日";
 
-  return d.toLocaleDateString("zh-HK", { weekday: "short", month: "numeric", day: "numeric" })
+  return d.toLocaleDateString("zh-HK", {
+    weekday: "short",
+    month: "numeric",
+    day: "numeric"
+  });
 }
 
+const container = document.getElementById("schedule");
 
-const container = document.getElementById("schedule")
+function checkboxList(group, selected = []) {
 
-
-function checkboxList(name, selected = []) {
+  const list = [...members, "其他"];
 
   return `
 <div class="member-list">
-
-${members.map(m => `
+${list.map(m => `
 <label>
-<input type="checkbox" value="${m}" data-group="${name}" ${selected.includes(m) ? "checked" : ""}>
-${m}
+<input type="checkbox" value="${m}" data-group="${group}" ${selected.includes(m) ? "checked" : ""}>
+${m === "其他" ? "其他(備注)" : m}
 </label>
 `).join("")}
-
-<label>
-<input type="checkbox" value="其他" data-group="${name}" ${selected.includes("其他") ? "checked" : ""}>
-其他(填寫備注)
-</label>
-
 </div>
-`
-
+`;
 }
-
 
 function createSlot(date, key, title, data) {
 
-  const slot = document.createElement("div")
-  slot.className = "slot"
+  const slot = document.createElement("div");
+  slot.className = "slot";
 
   slot.innerHTML = `
-
 <div class="slot-title">${title}</div>
 
 <label>去醫院</label>
@@ -107,53 +97,49 @@ ${checkboxList("food", data?.food || [])}
 
 <label>備注</label>
 <textarea placeholder="例如：粥、水果">${data?.remark || ""}</textarea>
+`;
 
-`
+  const visitBoxes = [...slot.querySelectorAll('input[data-group="visit"]')];
+  const foodBoxes = [...slot.querySelectorAll('input[data-group="food"]')];
+  const remark = slot.querySelector("textarea");
 
-  const visit = [...slot.querySelectorAll('input[data-group="visit"]')]
-  const food = [...slot.querySelectorAll('input[data-group="food"]')]
-
-  const remark = slot.querySelector("textarea")
-
-
-  function checked(list) {
-    return list.filter(i => i.checked).map(i => i.value)
+  function getChecked(list) {
+    return list.filter(i => i.checked).map(i => i.value);
   }
 
+  // food → visit 自動勾
+  foodBoxes.forEach(foodBox => {
 
-  food.forEach(foodBox => {
-
-    foodBox.onchange = () => {
+    foodBox.addEventListener("change", () => {
 
       if (foodBox.checked) {
 
-        const name = foodBox.value
+        const name = foodBox.value;
 
-        visit.forEach(v => {
-          if (v.value === name) {
-            v.checked = true
-          }
-        })
+        const visitBox = slot.querySelector(
+          `input[data-group="visit"][value="${name}"]`
+        );
+
+        if (visitBox) {
+          visitBox.checked = true;
+        }
 
       }
 
-      save()
+      save();
 
-    }
+    });
 
-  })
+  });
 
+  visitBoxes.forEach(v => v.onchange = save);
+  remark.oninput = save;
 
-  visit.forEach(v => v.onchange = save)
-  food.forEach(f => f.onchange = save)
-  remark.oninput = save
-
-
-  let timer
+  let timer;
 
   function save() {
 
-    clearTimeout(timer)
+    clearTimeout(timer);
 
     timer = setTimeout(async () => {
 
@@ -161,96 +147,95 @@ ${checkboxList("food", data?.food || [])}
         doc(db, "families", family, "days", date),
         {
           [key]: {
-            visitor: checked(visit),
-            food: checked(food),
+            visitor: getChecked(visitBoxes),
+            food: getChecked(foodBoxes),
             remark: remark.value
           },
           updatedAt: serverTimestamp()
         },
         { merge: true }
-      )
+      );
 
-    }, 300)
+    }, 300);
 
   }
 
-  return slot
+  return slot;
 }
-
-
 
 for (let i = 0; i < 7; i++) {
 
-  const d = new Date()
-  d.setDate(d.getDate() + i)
+  const d = new Date();
+  d.setDate(d.getDate() + i);
 
-  const date = formatDate(d)
+  const date = formatDate(d);
 
-  const dayDiv = document.createElement("div")
-  dayDiv.className = "day"
+  const dayDiv = document.createElement("div");
+  dayDiv.className = "day";
 
-  const today = new Date()
-  today.setHours(0, 0, 0, 0)
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
 
-  const check = new Date(d)
-  check.setHours(0, 0, 0, 0)
+  const check = new Date(d);
+  check.setHours(0, 0, 0, 0);
 
   if (check.getTime() === today.getTime()) {
-    dayDiv.classList.add("today")
+    dayDiv.classList.add("today");
   }
+
+  const star = check.getTime() === today.getTime() ? "⭐" : "";
 
   dayDiv.innerHTML = `
 <div class="day-title">
-${label(d)} ${check.getTime() === today.getTime() ? "⭐" : ""} (${date})
+${label(d)} ${star} (${date})
 </div>
-`
+`;
 
-  container.appendChild(dayDiv)
-
+  container.appendChild(dayDiv);
 
   onSnapshot(
     doc(db, "families", family, "days", date),
     snap => {
 
-      const data = snap.exists() ? snap.data() : {}
+      const data = snap.exists() ? snap.data() : {};
 
       dayDiv.innerHTML = `
 <div class="day-title">
-${label(d)} ${check.getTime() === today.getTime() ? "⭐" : ""} (${date})
+${label(d)} ${star} (${date})
 </div>
-`
+`;
 
-      dayDiv.appendChild(createSlot(date, "noon", "下午", data.noon))
-      dayDiv.appendChild(createSlot(date, "night", "晚上", data.night))
+      dayDiv.appendChild(createSlot(date, "noon", "下午", data.noon));
+      dayDiv.appendChild(createSlot(date, "night", "晚上", data.night));
 
-    })
+    }
+  );
 
 }
 
-
-
 document.getElementById("copyYesterday").onclick = async () => {
 
-  const today = new Date()
-  const yesterday = new Date()
-  yesterday.setDate(today.getDate() - 1)
+  const today = new Date();
+  const yesterday = new Date();
 
-  const t = formatDate(today)
-  const y = formatDate(yesterday)
+  yesterday.setDate(today.getDate() - 1);
 
-  const snap = await getDoc(doc(db, "families", family, "days", y))
+  const t = formatDate(today);
+  const y = formatDate(yesterday);
+
+  const snap = await getDoc(doc(db, "families", family, "days", y));
 
   if (!snap.exists()) {
-    alert("昨日沒有資料")
-    return
+    alert("昨日沒有資料");
+    return;
   }
 
   await setDoc(
     doc(db, "families", family, "days", t),
     snap.data(),
     { merge: true }
-  )
+  );
 
-  alert("已複製昨日安排")
+  alert("已複製昨日安排");
 
-}
+};
