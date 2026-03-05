@@ -121,22 +121,20 @@ return list.filter(i=>i.checked).map(i=>i.value)
 }
 
 
-food.forEach(foodBox=>{
+food.forEach((foodBox,i)=>{
+
 foodBox.onchange=()=>{
 
 if(foodBox.checked){
 
-visit.forEach(v=>{
-if(v.value===foodBox.value){
-v.checked=true
-}
-})
+visit[i].checked = true
 
 }
 
 save()
 
 }
+
 })
 
 
@@ -197,7 +195,7 @@ dayDiv.classList.add("today")
 
 dayDiv.innerHTML=`
 <div class="day-title">
-${label(d)} ${check.getTime()===today.getTime()?"⭐":""} (${date})
+${label(d)} ⭐ (${date})
 </div>
 `
 
