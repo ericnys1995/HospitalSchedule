@@ -197,7 +197,7 @@ dayDiv.classList.add("today")
 
 dayDiv.innerHTML=`
 <div class="day-title">
-${label(d)} ⭐ (${date})
+${label(d)} ${check.getTime()===today.getTime()?"⭐":""} (${date})
 </div>
 `
 
