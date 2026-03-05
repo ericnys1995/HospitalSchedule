@@ -8,6 +8,7 @@ getDoc,
 serverTimestamp
 } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
 
+
 const firebaseConfig = {
   apiKey: "AIzaSyD6SpjIWYZcGm0M-nt2oG5vdklAdGyTvCA",
   authDomain: "hospitalschedule-d9267.firebaseapp.com",
@@ -21,16 +22,7 @@ const firebaseConfig = {
 const app=initializeApp(firebaseConfig);
 const db=getFirestore(app);
 
-const members=["媽咪","阿哥","細路","姑姐","舅父","其他"];
-
-function memberSelect(){
-return `
-<select>
-<option value="">--選擇--</option>
-${members.map(m=>`<option>${m}</option>`).join("")}
-</select>
-`;
-}
+const members=["媽咪","阿哥","細路","姑姐","舅父"];
 
 function getFamily(){
 const m=location.hash.match(/family=([^&]+)/);
@@ -38,7 +30,6 @@ return m?m[1]:"default";
 }
 
 const family=getFamily();
-document.getElementById("status").innerText="Family: "+family;
 
 function formatDate(d){
 return d.toISOString().split("T")[0];
@@ -62,37 +53,50 @@ return d.toLocaleDateString("zh-HK",{weekday:"short",month:"numeric",day:"numeri
 
 const container=document.getElementById("schedule");
 
+
+function checkboxList(name,selected=[]){
+
+return `
+<div class="member-list">
+${members.map(m=>`
+<label>
+<input type="checkbox" value="${m}" ${selected.includes(m)?"checked":""} data-group="${name}">
+${m}
+</label>
+`).join("")}
+</div>
+`;
+
+}
+
+
 function createSlot(date,key,title,data){
 
 const slot=document.createElement("div");
 slot.className="slot";
 
 slot.innerHTML=`
+
 <div class="slot-title">${title}</div>
 
-<div class="row">
-<div>
 <label>去醫院</label>
-${memberSelect()}
-</div>
+${checkboxList("visit",data?.visitor||[])}
 
-<div>
 <label>帶嘢食</label>
-${memberSelect()}
-</div>
-</div>
+${checkboxList("food",data?.food||[])}
 
 <label>備注</label>
-<input placeholder="例如：粥、水果">
+<textarea placeholder="例如：粥、水果">${data?.remark||""}</textarea>
+
 `;
 
-const selects=slot.querySelectorAll("select");
-const remark=slot.querySelector("input");
+const visitChecks=[...slot.querySelectorAll('input[data-group="visit"]')];
+const foodChecks=[...slot.querySelectorAll('input[data-group="food"]')];
+const remark=slot.querySelector("textarea");
 
-if(data){
-selects[0].value=data.visitor||"";
-selects[1].value=data.food||"";
-remark.value=data.remark||"";
+
+function getChecked(list){
+return list.filter(i=>i.checked).map(i=>i.value);
 }
 
 let timer;
@@ -107,8 +111,8 @@ await setDoc(
 doc(db,"families",family,"days",date),
 {
 [key]:{
-visitor:selects[0].value,
-food:selects[1].value,
+visitor:getChecked(visitChecks),
+food:getChecked(foodChecks),
 remark:remark.value
 },
 updatedAt:serverTimestamp()
@@ -120,15 +124,15 @@ updatedAt:serverTimestamp()
 
 }
 
-selects[0].onchange=save;
-selects[1].onchange=save;
+visitChecks.forEach(i=>i.onchange=save);
+foodChecks.forEach(i=>i.onchange=save);
 remark.oninput=save;
 
 return slot;
 }
 
 
-// 建立7日
+
 for(let i=0;i<7;i++){
 
 const d=new Date();
@@ -157,6 +161,7 @@ ${label(d)} ${check.getTime()===today.getTime()?"⭐":""} (${date})
 
 container.appendChild(dayDiv);
 
+
 onSnapshot(
 doc(db,"families",family,"days",date),
 snap=>{
@@ -177,7 +182,7 @@ dayDiv.appendChild(createSlot(date,"night","晚",data.night));
 }
 
 
-// 複製昨日
+
 document.getElementById("copyYesterday").onclick=async()=>{
 
 const today=new Date();
@@ -194,11 +199,9 @@ alert("昨日沒有資料");
 return;
 }
 
-const data=snap.data();
-
 await setDoc(
 doc(db,"families",family,"days",t),
-data,
+snap.data(),
 {merge:true}
 );
 
