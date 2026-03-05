@@ -1,0 +1,63 @@
+body{
+  font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+  margin:20px;
+  background:#f7f7f7;
+}
+
+h1{
+  margin-bottom:10px;
+}
+
+#status{
+  font-size:12px;
+  color:#666;
+  margin-bottom:15px;
+}
+
+.day{
+  background:white;
+  border-radius:12px;
+  padding:12px;
+  margin-bottom:14px;
+  box-shadow:0 2px 6px rgba(0,0,0,0.05);
+}
+
+.day-title{
+  font-weight:bold;
+  margin-bottom:10px;
+}
+
+.slot{
+  border-top:1px solid #eee;
+  padding-top:10px;
+  margin-top:10px;
+}
+
+.slot-title{
+  font-weight:bold;
+  margin-bottom:6px;
+}
+
+label{
+  font-size:12px;
+  color:#666;
+}
+
+input{
+  width:100%;
+  padding:8px;
+  margin-top:3px;
+  margin-bottom:8px;
+  border-radius:8px;
+  border:1px solid #ddd;
+  font-size:15px;
+}
+
+.row{
+  display:flex;
+  gap:10px;
+}
+
+.row div{
+  flex:1;
+}
